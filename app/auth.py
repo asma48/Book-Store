@@ -1,42 +1,70 @@
-from datetime import datetime, timedelta
-from typing import Optional
-from jose import JWTError, jwt
+from starlette import status
+from jose import jwt, JWTError
+from datetime import timedelta, datetime
+from app.models import User
 from passlib.context import CryptContext
-from app.config import settings
-from app.schemas import TokenData
+from app.database.database import get_db
+from sqlalchemy.orm import Session
+from fastapi import Depends, HTTPException
+from fastapi.responses import JSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from app.schemas import Current_User
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
-
-
-def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+SECRET_KEY = os.getenv('SECRET_KEY')
+ALGORITHM = os.getenv('ALGORITHM')
 
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+bcrypt_context =  CryptContext(schemes= ['bcrypt'], deprecated= 'auto')
 
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now() + expires_delta
-    else:
-        expire = datetime.now() + timedelta(minutes=settings.access_token_expire_minutes)
-
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
-    return encoded_jwt
+bearer_scheme = HTTPBearer()
 
 
-def verify_token(token: str) -> Optional[TokenData]:
-    """Verify JWT token and return token data"""
-    try:
-        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
+def authenticate_user(email: str, password:str , db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == email).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail="User does not exist")
+    if not bcrypt_context.verify(password, user.hashed_password):
+        raise HTTPException(status_code=404, detail="Incorrect Password")
+    return user
+
+
+
+def create_access_token(email: str, expire_delta: timedelta):
+    encode = {'sub': email }
+    expires = expire_delta + datetime.now()
+    encode.update({'exp': expires})
+    return jwt.encode(encode, SECRET_KEY, algorithm= ALGORITHM)
+
+ 
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    db: Session = Depends(get_db)
+):  
+    
+        token = credentials.credentials
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("sub")
         if email is None:
-            return None
-        token_data = TokenData(email=email)
-        return token_data
-    except JWTError:
-        return None
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Unauthorized user"
+            )
+        try:
+            user = db.query(User).filter(User.email == email).first()
+            if not user:
+                raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+
+            return user
+        except JWTError:
+            raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Unauthorize user"
+        )

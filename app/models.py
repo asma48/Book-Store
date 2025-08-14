@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Text, Float, DateTime, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from app.database import Base
+from app.database.database import Base
 
 
 class User(Base):
@@ -11,11 +11,6 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     username = Column(String, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
-    is_active = Column(Boolean, default=True)
-    is_verified = Column(Boolean, default=False)
-    verification_token = Column(String, unique=True, nullable=True)
-    reset_token = Column(String, unique=True, nullable=True)
-    reset_token_expires = Column(DateTime, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     

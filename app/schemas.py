@@ -3,60 +3,22 @@ from typing import Optional, List
 from datetime import datetime
 
 
-# User Schemas
-class UserBase(BaseModel):
-    email: EmailStr
-    username: str = Field(..., min_length=3, max_length=50)
-
-
-
-class UserCreate(UserBase):
-    password: str = Field(..., min_length=8)
-
-
-class UserLogin(BaseModel):
+class Create_User(BaseModel):
+    username: str
     email: EmailStr
     password: str
-
-
-class UserUpdate(BaseModel):
-    username: Optional[str] = Field(None, min_length=3, max_length=50)
-    full_name: Optional[str] = None
-
-
-class UserResponse(UserBase):
-    id: int
-    is_active: bool
-    is_verified: bool
-    created_at: datetime
-    updated_at: Optional[datetime] = None
-    
-    class Config:
-        from_attributes = True
-
-
-class UserInDB(UserResponse):
-    hashed_password: str
-
-
-# Token Schemas
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-
-class TokenData(BaseModel):
-    email: Optional[str] = None
-
-
-# Password Reset Schemas
-class PasswordResetRequest(BaseModel):
+        
+class User_log_In(BaseModel):
     email: EmailStr
+    password : str
+
+class User_delete(BaseModel):
+    email: EmailStr
+    password : str
 
 
-class PasswordReset(BaseModel):
-    token: str
-    new_password: str = Field(..., min_length=8)
+class Current_User(BaseModel):
+    email : EmailStr  
 
 
 # Book Schemas
@@ -68,8 +30,12 @@ class BookBase(BaseModel):
     price: Optional[float] = Field(None, ge=0)
 
 
-class BookCreate(BookBase):
-    pass
+class BookCreate(BaseModel):
+    title: str = Field(..., min_length=1, max_length=200)
+    author: str = Field(..., min_length=1, max_length=100)
+    description: Optional[str] = None
+    isbn: Optional[str] = None
+    price: Optional[float] = Field(None, ge=0)
 
 
 class BookUpdate(BookBase):
@@ -80,8 +46,7 @@ class BookUpdate(BookBase):
 
 class BookResponse(BookBase):
     id: int
-    owner_id: int
-    cover_image: Optional[str] = None
+    user_id: int
     file_path: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime] = None

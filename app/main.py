@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.routes import auth, books, upload
-from app.database import engine
+from app.database.database import engine
 from app.models import Base
 
 # Create database tables
