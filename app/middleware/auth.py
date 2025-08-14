@@ -1,14 +1,14 @@
 from starlette import status
 from jose import jwt, JWTError
 from datetime import timedelta, datetime
-from app.models import User
+from app.models.models import User
 from passlib.context import CryptContext
 from app.database.database import get_db
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from app.schemas import Current_User
+from app.schemas.schemas import Current_User
 import os
 from dotenv import load_dotenv
 load_dotenv()

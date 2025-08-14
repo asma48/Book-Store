@@ -4,11 +4,11 @@ from pydantic import EmailStr
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends
 from app.database.database import get_db
-from app.models import User
+from app.models.models import User
 from datetime import datetime, timedelta
 from fastapi.responses import JSONResponse
-from app.schemas import Create_User, User_log_In, User_delete
-from app.auth import get_current_user, create_access_token, authenticate_user, bcrypt_context
+from app.schemas.schemas import Create_User, User_log_In, User_delete
+from app.middleware.auth import get_current_user, create_access_token, authenticate_user, bcrypt_context
 
 
 import os

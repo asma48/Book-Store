@@ -3,9 +3,9 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_
 from app.database.database import get_db
-from app.models import Book, User
-from app.schemas import BookCreate, BookUpdate, BookResponse, BookSearch, PaginationParams, PaginatedResponse
-from app.auth import get_current_user
+from app.models.models import Book, User
+from app.schemas.schemas import BookCreate, BookUpdate, BookResponse, BookSearch, PaginationParams, PaginatedResponse
+from app.middleware.auth import get_current_user
 
 router = APIRouter(prefix="/books", tags=["books"])
 

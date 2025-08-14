@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.routes import auth, books, upload
 from app.database.database import engine
-from app.models import Base
+from app.models.models import Base
 
 # Create database tables
 Base.metadata.create_all(bind=engine)

@@ -7,9 +7,9 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status, 
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from app.database.database import get_db
-from app.models import Book, User
-from app.schemas import BookResponse
-from app.auth import get_current_user
+from app.models.models import Book, User
+from app.schemas.schemas import BookResponse
+from app.middleware.auth import get_current_user
 
 
 router = APIRouter(prefix="/upload", tags=["file upload"])
