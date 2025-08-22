@@ -50,14 +50,14 @@ async def get_books(
     if title:
         query = query.filter(Book.title == title)
         total = query.count()
-        
+  
     if author:
         query = query.filter(Book.author == author)
         total = query.count()
 
     if title is None and author is None:
         total = query.count()
-
+ 
 
     offset = (page - 1) * size
     books = query.offset(offset).limit(size).all()
@@ -75,7 +75,7 @@ async def get_books(
 
 @router.get("/{book_id}", response_model=BookResponse)
 async def get_book(book_id: int, db: Session = Depends(get_db)):
-    """Get a specific book by ID"""
+    
     book = db.query(Book).filter(Book.id == book_id).first()
     
     if not book:
