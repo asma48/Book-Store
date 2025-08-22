@@ -38,25 +38,32 @@ async def create_book(
 
 @router.get("/", response_model=PaginatedResponse)
 async def get_books(
-    title: Optional[str] = Query(None, description="Search query for title or author"),
-    author: Optional[str] = Query(None, description="Filter by author"),
-    page: int = Query(1, ge=1, description="Page number"),
-    size: int = Query(10, ge=1, le=100, description="Page size"),
+    title: Optional[str] = Query(None, description="Search by book title"),
+    author: Optional[str] = Query(None, description="Search by author name"),
+    page: int = Query(1, ge=1, description="Page number (starts from 1)"),
+    size: int = Query(10, ge=1, le=100, description="Books per page"),
     db: Session = Depends(get_db)
 ):
 
     query = db.query(Book)
 
     if title:
-        query = query.filter(Book.title.ilike(f"%{title}%"))
-
+        query = query.filter(Book.title == title)
+        total = query.count()
+        
     if author:
-        query = query.filter(Book.author.ilike(f"%{author}%"))
-    
-    total = query.count()
+        query = query.filter(Book.author == author)
+        total = query.count()
+
+    if title is None and author is None:
+        total = query.count()
+
+
     offset = (page - 1) * size
     books = query.offset(offset).limit(size).all()
-    pages = (total + size - 1) // size
+    pages = (total + size - 1) // size if total else 1
+
+
     
     return PaginatedResponse(
         items=books,
@@ -65,7 +72,6 @@ async def get_books(
         size=size,
         pages=pages
     )
-
 
 @router.get("/{book_id}", response_model=BookResponse)
 async def get_book(book_id: int, db: Session = Depends(get_db)):
@@ -119,6 +125,7 @@ async def update_book(
     db.commit()
     db.refresh(book)
     
+    
     return book
 
 
@@ -145,6 +152,7 @@ async def delete_book(
     
     db.delete(book)
     db.commit()
+    return {"message" : "Book Deleted Successfully"}
 
 
 @router.get("/my/books", response_model=List[BookResponse])
